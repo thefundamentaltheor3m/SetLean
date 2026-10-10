@@ -10,3 +10,7 @@ This project is by some of the students of Carnegie Mellon University's graduate
 - [Blueprint (pdf)](https://thefundamentaltheor3m.github.io/SetLean/blueprint.pdf)
 - [Dependency graph](https://thefundamentaltheor3m.github.io/SetLean/blueprint/dep_graph_document.html)
 - [Documentation](https://thefundamentaltheor3m.github.io/SetLean/docs/)
+
+## AI Use
+
+While AI-assisted contributions are very welcome, we note that this project is not intended to be an experiment in autoformalisation. Rather, it is intended to foster collaboration and understanding through formalisation. Moreover, the output of this project is expected to be of high quality, suitable for upstreaming to Mathlib, and large amounts of AI-generated code sometimes fall short of such standards. We therefore expect the humans in the loop to carefully review the code and understand, account for and substantiate important design choices, particularly when they deviate from existing choices in the repository or upstream in Mathlib. The most effective way to use AI tools to write high-quality code is to use it in a deliberate and targeted manner instead of having them autoformalise vast amounts of complex material. We will use AI quite liberally to assist with repository management and other administrative tasks.
