@@ -44,3 +44,21 @@ jobs:
           mk_all-check: true
           use-github-cache: false
           use-mathlib-cache: true
+
+      # Check that every `\lean{...}` in the blueprint names a real declaration, without the
+      # full blueprint build: plasTeX (`leanblueprint web`) writes `blueprint/lean_decls`
+      # and needs no TeX distribution; the PDF and API docs are only built on `main`.
+      - name: Install blueprint dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz libgraphviz-dev
+          python3 -m venv "$RUNNER_TEMP/blueprint-venv"
+          "$RUNNER_TEMP/blueprint-venv/bin/pip" install leanblueprint
+
+      - name: Compile web blueprint
+        run: |
+          source "$RUNNER_TEMP/blueprint-venv/bin/activate"
+          leanblueprint web
+
+      - name: Check declarations mentioned in the blueprint exist in Lean code
+        run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
