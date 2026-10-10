@@ -1,11 +1,7 @@
 ---
-layout: default
 title: Upstreaming Dashboard
+permalink: /upstreaming/
 ---
-
-<header class="page-header">
-  <h1>{{ site.title }}</h1>
-</header>
 
 This project will typically want to contribute some files into `Mathlib` itself. These files, which we can call 'upstreaming candidates', exist in this repository while they are being developed. This dashboard shows upstreaming candidates that look ready to ingest into `Mathlib`, and also files in the project that look "easy to unlock" for upstreaming.
 
