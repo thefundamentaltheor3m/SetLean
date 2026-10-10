@@ -10,8 +10,8 @@ on:
       - 'lakefile.toml'
       - 'lake-manifest.json'
   pull_request:
-    branches:
-      - main
+    # branches:
+    #   - main
     paths:
       - '**/*.lean'
       - 'lean-toolchain'
