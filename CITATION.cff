@@ -1,0 +1,22 @@
+# This is the single source of truth for the project's authors.
+# After editing the author list, run `python3 scripts/sync_authors.py` and commit the result:
+# it updates `README.md`, `home_page/_config.yml` and `blueprint/src/authors.tex`.
+# Quote names that YAML could read as something other than a string (e.g. "No", "Null", "1e3").
+cff-version: 1.2.0
+message: "If you use this project, please cite it as below."
+type: software
+title: "Graduate-Level Set Theory in Lean"
+authors:
+  - given-names: "Erica"
+    family-names: "Assang"
+  - given-names: "Sidharth"
+    family-names: "Hariharan"
+    orcid: https://orcid.org/0009-0000-8176-902X
+  - given-names: "Jack"
+    family-names: "McKoen"
+    orcid: https://orcid.org/0009-0003-6738-6366
+  - given-names: "Will"
+    family-names: "Schremmer"
+repository-code: "https://github.com/thefundamentaltheor3m/SetLean"
+url: "https://thefundamentaltheor3m.github.io/SetLean"
+license: Apache-2.0
