@@ -17,6 +17,20 @@ permissions:
   id-token: write         # Write access to ID tokens
 
 jobs:
+  # Every list of authors outside `CITATION.cff` is generated from it by `scripts/sync_authors.py`
+  check_authors:
+    runs-on: ubuntu-latest
+    name: Check author lists
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check author lists are in sync with CITATION.cff
+        run: |
+          python3 -m venv "$RUNNER_TEMP/authors-venv"
+          "$RUNNER_TEMP/authors-venv/bin/pip" install pyyaml
+          "$RUNNER_TEMP/authors-venv/bin/python" scripts/sync_authors.py --check
+
   build_project:
     runs-on: ubuntu-latest
     name: Build project
