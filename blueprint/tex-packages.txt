@@ -1,0 +1,22 @@
+# TeX Live packages installed by `.github/workflows/blueprint.yml` to compile the PDF blueprint.
+# `tlmgr` installs their dependencies too, so only list what `blueprint/src/print.tex` loads directly.
+# When the PDF build fails with "File `foo.sty' not found", add the TeX Live package providing it
+# (https://ctan.org/pkg/foo shows it under "Contained in"). Changing this file invalidates the TeX Live cache.
+scheme-basic
+
+# Engine and build tool, see `blueprint/src/latexmkrc`
+xetex
+latexmk
+
+# Packages loaded in `blueprint/src/print.tex`
+geometry
+amsfonts # amssymb
+amscls # amsthm
+mathtools
+hyperref
+fontspec
+unicode-math
+
+# Default fonts of `fontspec` and `unicode-math`
+lm
+lm-math

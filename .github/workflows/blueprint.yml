@@ -56,8 +56,45 @@ jobs:
           project-name: SetLean
           branch-name: ${{ github.event.repository.default_branch }}
 
-      - name: Compile blueprint and documentation
+      # The blueprint is built here rather than by `docgen-action`, which pulls the multi-GB
+      # `texlive-full` Docker image on every run. Only the TeX Live packages listed in
+      # `blueprint/tex-packages.txt` are installed, and `setup-texlive-action` caches them.
+      - name: Install TeX Live
+        uses: TeX-Live/setup-texlive-action@eb78d21f41941476d9121e3a0abcab73265c876f # v4.1.1
+        with:
+          package-file: blueprint/tex-packages.txt
+
+      # Keeps the `pygraphviz` wheel built from source, which `build-project.yml` restores on PRs.
+      # The key is unique to each run so that the newest packages are saved; the newest cache is restored.
+      - name: Cache pip downloads and wheels
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pip
+          key: pip-blueprint-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}
+          restore-keys: pip-blueprint-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Install blueprint dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz libgraphviz-dev
+          python3 -m venv "$RUNNER_TEMP/blueprint-venv"
+          "$RUNNER_TEMP/blueprint-venv/bin/pip" install leanblueprint
+
+      # Same outputs as `docgen-action` with `blueprint: true`, which the Jekyll site picks up
+      - name: Compile blueprint
+        run: |
+          source "$RUNNER_TEMP/blueprint-venv/bin/activate"
+          leanblueprint pdf
+          mkdir -p home_page
+          cp blueprint/print/print.pdf home_page/blueprint.pdf
+          leanblueprint web
+          cp -r blueprint/web home_page/blueprint
+
+      - name: Check declarations mentioned in the blueprint exist in Lean code
+        run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
+
+      - name: Compile documentation
         uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
         with:
-          blueprint: true
+          blueprint: false # Built above
           homepage: home_page
