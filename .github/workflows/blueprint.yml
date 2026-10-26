@@ -64,21 +64,11 @@ jobs:
         with:
           package-file: blueprint/tex-packages.txt
 
-      # Keeps the `pygraphviz` wheel built from source, which `build-project.yml` restores on PRs.
-      # The key is unique to each run so that the newest packages are saved; the newest cache is restored.
-      - name: Cache pip downloads and wheels
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/pip
-          key: pip-blueprint-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}
-          restore-keys: pip-blueprint-${{ runner.os }}-${{ runner.arch }}-
-
+      # No system Graphviz: the `pygraphviz` wheel bundles it
       - name: Install blueprint dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz libgraphviz-dev
           python3 -m venv "$RUNNER_TEMP/blueprint-venv"
-          "$RUNNER_TEMP/blueprint-venv/bin/pip" install leanblueprint
+          "$RUNNER_TEMP/blueprint-venv/bin/pip" install --only-binary pygraphviz leanblueprint
 
       # Same outputs as `docgen-action` with `blueprint: true`, which the Jekyll site picks up
       - name: Compile blueprint

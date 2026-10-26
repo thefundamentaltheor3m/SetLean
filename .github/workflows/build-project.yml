@@ -59,24 +59,14 @@ jobs:
           use-github-cache: false
           use-mathlib-cache: true
 
-      # Restore the pip cache saved by `blueprint.yml`, to reuse its `pygraphviz` wheel instead of
-      # compiling it. Restore only, for the same reason as the Lake cache above.
-      - name: Restore pip cache from main
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/pip
-          key: pip-blueprint-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}
-          restore-keys: pip-blueprint-${{ runner.os }}-${{ runner.arch }}-
-
       # Check that every `\lean{...}` in the blueprint names a real declaration, without the
       # full blueprint build: plasTeX (`leanblueprint web`) writes `blueprint/lean_decls`
       # and needs no TeX distribution; the PDF and API docs are only built on `main`.
+      # No system Graphviz either: the `pygraphviz` wheel bundles it.
       - name: Install blueprint dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz libgraphviz-dev
           python3 -m venv "$RUNNER_TEMP/blueprint-venv"
-          "$RUNNER_TEMP/blueprint-venv/bin/pip" install leanblueprint
+          "$RUNNER_TEMP/blueprint-venv/bin/pip" install --only-binary pygraphviz leanblueprint
 
       - name: Compile web blueprint
         run: |
