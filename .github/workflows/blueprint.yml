@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main # Trigger on pushes to the default branch
-      - ci/cache-blueprint-deps # TEMPORARY: test the push-only steps on this PR's branch
   workflow_dispatch:        # Allow manual triggering of the workflow from the GitHub Actions interface
 
 # Cancel previous runs if a new commit is pushed to the same PR or branch
@@ -40,7 +39,6 @@ jobs:
           build: true
           lint: false # No lint driver is configured in `lakefile.toml`
           mk_all-check: true
-          use-github-cache: ${{ github.ref == 'refs/heads/main' }} # TEMPORARY: don't save a 2.4 GB Lake cache for the test branch
 
       # See https://github.com/leanprover-community/upstreaming-dashboard-action
       # Generates `home_page/_includes/_upstreaming_dashboard`, used by `home_page/upstreaming.md`
@@ -95,5 +93,4 @@ jobs:
         with:
           blueprint: false # Built above
           homepage: home_page
-          deploy: ${{ github.ref == 'refs/heads/main' }} # TEMPORARY: never deploy the test branch
           ruby-version: "3.1" # The version `home_page/Gemfile.lock` was locked with; the action now defaults to 3.4
