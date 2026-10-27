@@ -1,7 +1,12 @@
-# TeX Live packages installed by `.github/workflows/blueprint.yml` to compile the PDF blueprint.
-# `tlmgr` installs their dependencies too, so only list what `blueprint/src/print.tex` loads directly.
-# When the PDF build fails with "File `foo.sty' not found", add the TeX Live package providing it
-# (https://ctan.org/pkg/foo shows it under "Contained in"). Changing this file invalidates the TeX Live cache.
+# TeX Live packages that `.github/workflows/blueprint.yml` and `.github/workflows/build-project.yml`
+# install to compile the blueprint. `tlmgr` installs their dependencies too, so only list what
+# `blueprint/src/print.tex` loads directly. When the PDF build fails with "File `foo.sty' not found",
+# add the TeX Live package providing it (https://ctan.org/pkg/foo shows it under "Contained in").
+# Any change to this file, comments included, starts a fresh TeX Live installation in CI.
+#
+# Neither Ghostscript nor `dvisvgm` is installed, so plasTeX cannot render images for the web
+# blueprint. Nothing needs them today, but TikZ or `tikz-cd` diagrams in the blueprint would.
+# To support them, add `dvisvgm` here and install Ghostscript (`ghostscript` from apt) in both workflows.
 scheme-basic
 
 # Engine and build tool, see `blueprint/src/latexmkrc`

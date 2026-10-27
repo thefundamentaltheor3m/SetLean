@@ -10,11 +10,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}  # Group runs by workflow and ref (branch or PR)
   cancel-in-progress: true  # Cancel any ongoing runs in the same group
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages and modify PR labels
+# Nothing here deploys or writes to the repository, so the GITHUB_TOKEN only needs to read it
 permissions:
   contents: read          # Read access to repository contents
-  pages: write            # Write access to GitHub Pages
-  id-token: write         # Write access to ID tokens
+
+# Use `bash -eo pipefail` for every `run` step. Without `shell`, steps run in `bash -e`, so a
+# failing command piped into `tee` would not fail its step.
+defaults:
+  run:
+    shell: bash
 
 jobs:
   # Every list of authors outside `CITATION.cff` is generated from it by `scripts/sync_authors.py`
@@ -67,6 +71,10 @@ jobs:
         uses: TeX-Live/setup-texlive-action@eb78d21f41941476d9121e3a0abcab73265c876f # v4.1.1
         with:
           package-file: blueprint/tex-packages.txt
+          # A separate prefix per package list. The action's cache otherwise falls back to an
+          # installation of any earlier list and only adds what is missing, so a package removed
+          # from the list but still needed would stay installed and go unnoticed.
+          prefix: ${{ runner.temp }}/texlive-${{ hashFiles('blueprint/tex-packages.txt') }}
 
       - name: Install blueprint dependencies
         run: |
