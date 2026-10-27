@@ -1,0 +1,4 @@
+# Python packages that build the blueprint, installed by `.github/workflows/blueprint.yml`
+# and `.github/workflows/build-project.yml`. Dependabot keeps the pin up to date.
+--only-binary pygraphviz # Its wheels bundle Graphviz, so no system Graphviz is needed
+leanblueprint==0.0.20

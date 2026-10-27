@@ -16,8 +16,6 @@ permissions:
   contents: read          # Read access to repository contents
   pages: write            # Write access to GitHub Pages
   id-token: write         # Write access to ID tokens
-  issues: write           # Write access to issues
-  pull-requests: write    # Write access to pull requests
 
 jobs:
   build_project:
@@ -25,9 +23,9 @@ jobs:
     name: Build project
     steps:
       - name: Cleanup to free disk space
-        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v1.3.0
+        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
-          tool-cache: false
+          preinstalled-runtimes: false
           android: true
           dotnet: false
           haskell: false
@@ -64,42 +62,41 @@ jobs:
         with:
           package-file: blueprint/tex-packages.txt
 
-      # No system Graphviz: the `pygraphviz` wheel bundles it
       - name: Install blueprint dependencies
         run: |
           python3 -m venv "$RUNNER_TEMP/blueprint-venv"
-          "$RUNNER_TEMP/blueprint-venv/bin/pip" install --only-binary pygraphviz leanblueprint
+          "$RUNNER_TEMP/blueprint-venv/bin/pip" install -r blueprint/requirements.txt
 
-      # Same outputs as `docgen-action` with `blueprint: true`, which the Jekyll site picks up
+      # Same outputs as `docgen-action` with `blueprint: true`, which the Jekyll site picks up.
+      # plasTeX only warns about a missing `\input`, which would silently drop that part of the
+      # blueprint and its `\lean{...}` declarations from `checkdecls`, so treat it as an error.
       - name: Compile blueprint
         run: |
           source "$RUNNER_TEMP/blueprint-venv/bin/activate"
           leanblueprint pdf
           mkdir -p home_page
           cp blueprint/print/print.pdf home_page/blueprint.pdf
-          leanblueprint web
+          leanblueprint web 2>&1 | tee "$RUNNER_TEMP/blueprint-web.log"
+          if grep -q 'File not found' "$RUNNER_TEMP/blueprint-web.log"; then
+            echo "::error::plasTeX could not find some files of the blueprint, see the log above"
+            exit 1
+          fi
           cp -r blueprint/web home_page/blueprint
 
       - name: Check declarations mentioned in the blueprint exist in Lean code
         run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
 
-      # Most of `docgen-action`'s time goes to doc-gen4 documenting Lean core (its `coreDocs` target),
-      # which only depends on the toolchain. Its results live in `docbuild/.lake/build`
-      # (`api-docs.db` and the `doc-data` markers Lake checks), so caching that directory lets Lake
-      # skip it. Only `docbuild/.lake` is cached: `docbuild/lake-manifest.json` is left out so that
-      # it is always resolved afresh from `lake-manifest.json`. `docbuild` shares `.lake/packages`
-      # with this project, so a stale manifest could check out other versions of its dependencies.
-      - name: Cache API documentation build
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: docbuild/.lake
-          key: docbuild-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
-          restore-keys: |
-            docbuild-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
-            docbuild-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-
-
+      # Since dacc1ac, `docgen-action` caches doc-gen4's database and markers (`api-docs.db` and
+      # `doc-data`), so that the Lean core docs (doc-gen4's `coreDocs`, most of its run time) are
+      # only built again when `lake-manifest.json` changes.
       - name: Compile documentation
-        uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
+        uses: leanprover-community/docgen-action@dacc1acc2a3f532cc577266979ba9c36c7593f7c # main as of 2026-10-05
         with:
           blueprint: false # Built above
           homepage: home_page
+          ruby-version: "3.1" # The version `home_page/Gemfile.lock` was locked with; the action now defaults to 3.4
+
+      # Shows how much disk is left, to decide whether the cleanup step at the top is still needed
+      - name: Report free disk space
+        if: always()
+        run: df -h /

@@ -59,19 +59,31 @@ jobs:
           use-github-cache: false
           use-mathlib-cache: true
 
-      # Check that every `\lean{...}` in the blueprint names a real declaration, without the
-      # full blueprint build: plasTeX (`leanblueprint web`) writes `blueprint/lean_decls`
-      # and needs no TeX distribution; the PDF and API docs are only built on `main`.
-      # No system Graphviz either: the `pygraphviz` wheel bundles it.
+      # Build the blueprint as `blueprint.yml` does on `main`, so that a missing TeX package or file
+      # fails here rather than the deploy. plasTeX needs `kpsewhich` from TeX Live to find the files
+      # that `\input` names. The TeX Live cache saved on `main` has the same key, so it is reused;
+      # this only saves a cache of its own if `blueprint/tex-packages.txt` changed.
+      - name: Install TeX Live
+        uses: TeX-Live/setup-texlive-action@eb78d21f41941476d9121e3a0abcab73265c876f # v4.1.1
+        with:
+          package-file: blueprint/tex-packages.txt
+
       - name: Install blueprint dependencies
         run: |
           python3 -m venv "$RUNNER_TEMP/blueprint-venv"
-          "$RUNNER_TEMP/blueprint-venv/bin/pip" install --only-binary pygraphviz leanblueprint
+          "$RUNNER_TEMP/blueprint-venv/bin/pip" install -r blueprint/requirements.txt
 
-      - name: Compile web blueprint
+      # plasTeX only warns about a missing `\input`, which would silently drop that part of the
+      # blueprint and its `\lean{...}` declarations from `checkdecls`, so treat it as an error
+      - name: Compile blueprint
         run: |
           source "$RUNNER_TEMP/blueprint-venv/bin/activate"
-          leanblueprint web
+          leanblueprint pdf
+          leanblueprint web 2>&1 | tee "$RUNNER_TEMP/blueprint-web.log"
+          if grep -q 'File not found' "$RUNNER_TEMP/blueprint-web.log"; then
+            echo "::error::plasTeX could not find some files of the blueprint, see the log above"
+            exit 1
+          fi
 
       - name: Check declarations mentioned in the blueprint exist in Lean code
         run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
