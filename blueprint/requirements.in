@@ -1,0 +1,6 @@
+# Python packages that build the blueprint. `requirements.txt`, which both workflows install,
+# pins them and their dependencies: after editing this file, regenerate it with
+#   pip-compile --strip-extras blueprint/requirements.in
+# Dependabot keeps the pins up to date.
+--only-binary pygraphviz # Its wheels bundle Graphviz, so no system Graphviz is needed
+leanblueprint
