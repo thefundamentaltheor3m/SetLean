@@ -83,6 +83,21 @@ jobs:
       - name: Check declarations mentioned in the blueprint exist in Lean code
         run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
 
+      # Most of `docgen-action`'s time goes to doc-gen4 documenting Lean core (its `coreDocs` target),
+      # which only depends on the toolchain. Its results live in `docbuild/.lake/build`
+      # (`api-docs.db` and the `doc-data` markers Lake checks), so caching that directory lets Lake
+      # skip it. Only `docbuild/.lake` is cached: `docbuild/lake-manifest.json` is left out so that
+      # it is always resolved afresh from `lake-manifest.json`. `docbuild` shares `.lake/packages`
+      # with this project, so a stale manifest could check out other versions of its dependencies.
+      - name: Cache API documentation build
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: docbuild/.lake
+          key: docbuild-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: |
+            docbuild-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
+            docbuild-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-
+
       - name: Compile documentation
         uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
         with:
