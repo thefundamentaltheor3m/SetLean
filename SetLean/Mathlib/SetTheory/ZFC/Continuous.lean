@@ -13,6 +13,11 @@ universe u
 
 namespace ZFSet
 
-def IsContinuous (f : Ordinal.{u} → ZFSet.{u}) : Prop := sorry
+def IsContinuousOn (f : Ordinal.{u} → ZFSet.{u}) (C : Set Ordinal.{u}) : Prop :=
+  sorry
+
+abbrev IsContinuous (f : Ordinal.{u} → ZFSet.{u}) : Prop := IsContinuousOn f Set.univ
+
+-- [TODO] continuous iff sequentially continuous
 
 end ZFSet
