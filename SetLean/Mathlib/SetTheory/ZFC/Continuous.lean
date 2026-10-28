@@ -20,4 +20,10 @@ abbrev IsContinuous (f : Ordinal.{u} → ZFSet.{u}) : Prop := IsContinuousOn f S
 
 -- [TODO] continuous iff sequentially continuous
 
+#check ContinuousOn
+
+#synth TopologicalSpace Ordinal.{u}
+
+#synth Preorder ZFSet
+
 end ZFSet

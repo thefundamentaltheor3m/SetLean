@@ -5,7 +5,7 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib
+public import SetLean.Mathlib.SetTheory.ZFC.Topology
 
 @[expose] public section
 
@@ -28,5 +28,8 @@ abbrev Union : ZFClass.{u + 1} := ⋃ α ∈ Z.indices, Z.map α
 abbrev Sets : ZFClass.{u + 1} := Z.map '' Z.indices
 
 end Chain
+
+structure ContChain : Type (u + 2) extends Chain where
+  cont : Continuous map
 
 end ZFSet
