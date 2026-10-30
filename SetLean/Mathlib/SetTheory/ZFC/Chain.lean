@@ -5,7 +5,8 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib
+public import Mathlib.SetTheory.Cardinal.Cofinality.Club
+public import Mathlib.SetTheory.Ordinal.Topology
 
 public import SetLean.Mathlib.SetTheory.ZFC.Class
 public import SetLean.Mathlib.SetTheory.ZFC.Topology
