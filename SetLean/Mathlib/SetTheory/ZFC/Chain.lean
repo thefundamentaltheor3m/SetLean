@@ -5,6 +5,9 @@ Authors: Sidharth Hariharan
 -/
 module
 
+public import Mathlib
+
+public import SetLean.Mathlib.SetTheory.ZFC.Class
 public import SetLean.Mathlib.SetTheory.ZFC.Topology
 
 @[expose] public section
@@ -12,6 +15,8 @@ public import SetLean.Mathlib.SetTheory.ZFC.Topology
 universe u
 
 namespace ZFSet
+
+open ZFClass
 
 @[ext]
 structure Chain : Type (u + 2) where
@@ -23,13 +28,25 @@ namespace Chain
 
 variable (Z : Chain)
 
-abbrev Union : ZFClass.{u + 1} := ⋃ α ∈ Z.indices, Z.map α
+abbrev union : ZFClass.{u} := ⋃ α ∈ Z.indices, Z.map α
 
-abbrev Sets : ZFClass.{u + 1} := Z.map '' Z.indices
+abbrev sets : ZFClass.{u} := Z.map '' Z.indices
 
 end Chain
 
 structure ContChain : Type (u + 2) extends Chain where
   cont : Continuous map
+  club : IsClub indices
+
+structure Hierarchy : Type (u + 2) extends ContChain where
+  trans : ∀ α ∈ indices, (map α).IsTransitive
+
+namespace Hierarchy
+
+variable (Z : Hierarchy)
+
+lemma union_isTransitive : Z.union.IsTransitive := isTransitive_iUnion Z.map Z.indices Z.trans
+
+end Hierarchy
 
 end ZFSet

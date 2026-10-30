@@ -5,7 +5,8 @@ Authors: Sidharth Hariharan
 -/
 module
 
-public import Mathlib
+public import Mathlib.SetTheory.ZFC.Basic
+public import Mathlib.Topology.Order.Basic
 
 @[expose] public section
 
