@@ -36,7 +36,7 @@ abbrev sets : ZFClass.{u} := Z.map '' Z.indices
 end Chain
 
 structure ContChain : Type (u + 2) extends Chain where
-  cont : Continuous map
+  cont : ContinuousOn map indices
   club : IsClub indices
 
 structure Hierarchy : Type (u + 2) extends ContChain where
