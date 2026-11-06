@@ -7,3 +7,9 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every week
       interval: "weekly"
+
+  - package-ecosystem: "pip"  # The blueprint's Python packages
+    directory: "/blueprint"  # Contains `requirements.txt`
+    schedule:
+      # Check for updates to `leanblueprint` every week
+      interval: "weekly"

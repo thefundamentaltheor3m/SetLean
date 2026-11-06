@@ -16,25 +16,18 @@ permissions:
   contents: read          # Read access to repository contents
   pages: write            # Write access to GitHub Pages
   id-token: write         # Write access to ID tokens
-  issues: write           # Write access to issues
-  pull-requests: write    # Write access to pull requests
+
+# Use `bash -eo pipefail` for every `run` step. Without `shell`, steps run in `bash -e`, so a
+# failing command piped into `tee` would not fail its step.
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build_project:
     runs-on: ubuntu-latest
     name: Build project
     steps:
-      - name: Cleanup to free disk space
-        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v1.3.0
-        with:
-          tool-cache: false
-          android: true
-          dotnet: false
-          haskell: false
-          large-packages: false
-          docker-images: false
-          swap-storage: false
-
       - name: Checkout project
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -56,8 +49,48 @@ jobs:
           project-name: SetLean
           branch-name: ${{ github.event.repository.default_branch }}
 
-      - name: Compile blueprint and documentation
-        uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
+      # The blueprint is built here rather than by `docgen-action`, which pulls the multi-GB
+      # `texlive-full` Docker image on every run. Only the TeX Live packages listed in
+      # `blueprint/tex-packages.txt` are installed, and `setup-texlive-action` caches them.
+      - name: Install TeX Live
+        uses: TeX-Live/setup-texlive-action@eb78d21f41941476d9121e3a0abcab73265c876f # v4.1.1
         with:
-          blueprint: true
+          package-file: blueprint/tex-packages.txt
+          # A separate prefix per package list. The action's cache otherwise falls back to an
+          # installation of any earlier list and only adds what is missing, so a package removed
+          # from the list but still needed would stay installed and go unnoticed.
+          prefix: ${{ runner.temp }}/texlive-${{ hashFiles('blueprint/tex-packages.txt') }}
+
+      - name: Install blueprint dependencies
+        run: |
+          python3 -m venv "$RUNNER_TEMP/blueprint-venv"
+          "$RUNNER_TEMP/blueprint-venv/bin/pip" install -r blueprint/requirements.txt
+
+      # Same outputs as `docgen-action` with `blueprint: true`, which the Jekyll site picks up.
+      # plasTeX only warns about a missing `\input`, which would silently drop that part of the
+      # blueprint and its `\lean{...}` declarations from `checkdecls`, so treat it as an error.
+      - name: Compile blueprint
+        run: |
+          source "$RUNNER_TEMP/blueprint-venv/bin/activate"
+          leanblueprint pdf
+          mkdir -p home_page
+          cp blueprint/print/print.pdf home_page/blueprint.pdf
+          leanblueprint web 2>&1 | tee "$RUNNER_TEMP/blueprint-web.log"
+          if grep -q 'File not found' "$RUNNER_TEMP/blueprint-web.log"; then
+            echo "::error::plasTeX could not find some files of the blueprint, see the log above"
+            exit 1
+          fi
+          cp -r blueprint/web home_page/blueprint
+
+      - name: Check declarations mentioned in the blueprint exist in Lean code
+        run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
+
+      # Since dacc1ac, `docgen-action` caches doc-gen4's database and markers (`api-docs.db` and
+      # `doc-data`), so that the Lean core docs (doc-gen4's `coreDocs`, most of its run time) are
+      # only built again when `lake-manifest.json` changes.
+      - name: Compile documentation
+        uses: leanprover-community/docgen-action@dacc1acc2a3f532cc577266979ba9c36c7593f7c # main as of 2026-10-05
+        with:
+          blueprint: false # Built above
           homepage: home_page
+          ruby-version: "3.1" # The version `home_page/Gemfile.lock` was locked with; the action now defaults to 3.4
