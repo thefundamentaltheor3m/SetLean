@@ -1,0 +1,62 @@
+\chapter{Hierarchies}
+
+We begin by defining a `hierarchy' indexed by a club class of ordinals.
+
+\begin{definition}[Hierarchy]
+  We say a family of sets $Z_{\alpha}$ (indexed over a class $C \ssq \OR$) is a \textbf{hierarchy} if the following are all true:
+  \begin{enumerate}
+    \item each $Z_{\alpha}$ is transitive
+    \item the class $C$ is club in $\OR$
+    \item for every $\alpha < \beta$ from $C$, $Z_{\alpha} \subset Z_{\beta}$
+      \item for every $\beta$ a limit point\footnote{as $C$ is club, such $\beta$s do also lie in $C$} of $C$,
+      \begin{align*}
+          Z_{\beta} = \bigcup_{\alpha \in C \cap \beta} Z_{\alpha}
+      \end{align*}
+    We usually write
+    \begin{align*}
+        Z = \bigcup_{\alpha \in C} Z_{\alpha}
+        = \setst{x}{\exists \alpha \in C \st x \in Z_{\alpha}}
+    \end{align*}
+    to denote the entire hierarchy.
+  \end{enumerate}
+\end{definition}
+
+\section{The Three Main Hierarchies}
+
+\subsection{The $V$-Hierarchy}
+
+This is also sometimes referred to as the cumulative hierarchy.
+
+\begin{definition}[The Sets $V_{\alpha}$]
+  For each ordinal $\alpha$, define $V_{\alpha}$ by recursion as follows.
+  \begin{itemize}
+    \item If $\alpha = 0$, define $V_{\alpha} = 0$.
+    \item If $\alpha = \beta + 1$, define $V_{\alpha} = \Powset\of{V_{\alplha}}$
+    \item If $\alpha$ is a limit ordinal, define $V_{\alpha} = \bigcup_{\eta < \alpha} V_{\eta}$
+  \end{itemize}
+  Denote
+  \begin{align*}
+    V = \bigcup_{\alpha \in \OR} V_{\alpha}
+  \end{align*}
+\end{definition}
+
+As we refer to this as the $V$-hierarchy or the cumulative hierarchy, you might imagine that it is, indeed, a hierarchy. We will need to show this.
+
+\begin{lemma}
+  $\abs{V_{\omega}} = \aleph_0$.
+\end{lemma}
+
+\begin{lemma}
+  For all $\alpha \in \OR$,
+  \begin{align*}
+    \abs{V_{\omega + \alpha}} = \beth_{\alpha}
+  \end{align*}
+\end{lemma}
+
+\subsection{The $H$-Hierarchy}
+
+This is also sometimes referred to as the hereditary hierarchy.
+
+\subsection{The $L$-Hierarchy}
+
+This is also sometimes referred to as the constructible hierarchy.
